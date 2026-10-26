@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import {
+    doc,
+    getDoc,
     collection,
     addDoc,
-    getDocs,
-    query,
-    where,
     serverTimestamp
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
@@ -34,21 +33,19 @@ function Login() {
 
             const user = result.user;
 
-            // Find the user's registered name in Firestore
-            const userQuery = query(
-                collection(db, "User"),
-                where("email", "==", user.email)
-            );
+            // Find the user's document using their Firebase UID
+            const userRef = doc(db, "User", user.uid);
+            const userSnapshot = await getDoc(userRef);
 
-            const userSnapshot = await getDocs(userQuery);
-
-            const userData = userSnapshot.docs[0]?.data();
+            const userData = userSnapshot.exists()
+                ? userSnapshot.data()
+                : {};
 
             // Save the login record in Firestore
             await addDoc(collection(db, "LoginHistory"), {
                 uid: user.uid,
                 email: user.email,
-                name: userData?.name || "",
+                name: userData.name || "",
                 loginTime: serverTimestamp()
             });
 

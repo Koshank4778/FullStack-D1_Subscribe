@@ -3,24 +3,16 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCdR_t28prIGMqaLz9EUX3W22qKz4YccK4",
-    authDomain: "dev-deakin-p4-1833e.firebaseapp.com",
-    projectId: "dev-deakin-p4-1833e",
-    storageBucket: "dev-deakin-p4-1833e.firebasestorage.app",
-    messagingSenderId: "653326380080",
-    appId: "1:653326380080:web:4a348e8fe137ed783511f5",
-    measurementId: "G-E3QPXQ5D5K"
+    apiKey: "AIzaSyB5YBfxbAiMgiopjC9EFNEc7Y4OIY3tqgg",
+    authDomain: "dev-deakin-d1.firebaseapp.com",
+    projectId: "dev-deakin-d1",
+    storageBucket: "dev-deakin-d1.firebasestorage.app",
+    messagingSenderId: "181568383094",
+    appId: "1:181568383094:web:96c29718b1a4ce608d1757",
+    measurementId: "G-26Y1B4XKPK"
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-
-
-// };
-
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);

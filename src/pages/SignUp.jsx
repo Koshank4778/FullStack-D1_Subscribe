@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+    createUserWithEmailAndPassword,
+    updateProfile
+} from "firebase/auth";
+import {
+    doc,
+    setDoc,
+    serverTimestamp
+} from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 
@@ -18,43 +25,64 @@ function SignUp() {
         e.preventDefault();
         setError("");
 
+        if (!fullName.trim()) {
+            setError("Please enter your full name.");
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
 
-        if (fullName.trim() === "") {
-            setError("Please enter your full name.");
+        if (password.length < 6) {
+            setError("Your password must contain at least 6 characters.");
             return;
         }
 
         setLoading(true);
 
         try {
+            const cleanName = fullName.trim();
+            const cleanEmail = email.trim();
+
+            // Create the Firebase Authentication account
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
-                email.trim(),
+                cleanEmail,
                 password
             );
 
-            await updateProfile(userCredential.user, {
-                displayName: fullName.trim()
+            const user = userCredential.user;
+
+            // Save the user's display name in Firebase Authentication
+            await updateProfile(user, {
+                displayName: cleanName
             });
 
-            await setDoc(doc(db, "User", userCredential.user.uid), {
-                name: fullName.trim(),
-                email: email.trim(),
-                createdAt: serverTimestamp()
+            // Create the user's Firestore document
+            await setDoc(doc(db, "User", user.uid), {
+                name: cleanName,
+                email: user.email,
+                createdAt: serverTimestamp(),
+                subscriptionPlan: "Free"
             });
 
+            // Navigate only after both account setup steps succeed
             navigate("/");
         } catch (err) {
+            console.error("Signup error:", err);
+
             if (err.code === "auth/email-already-in-use") {
                 setError("This email is already registered. Please log in.");
             } else if (err.code === "auth/weak-password") {
                 setError("Your password must contain at least 6 characters.");
             } else if (err.code === "auth/invalid-email") {
                 setError("Please enter a valid email address.");
+            } else if (err.code === "permission-denied") {
+                setError(
+                    "Your account was created, but Firestore denied saving your user details. Please check your Firestore security rules."
+                );
             } else {
                 setError(err.message || "Unable to create your account.");
             }
@@ -67,6 +95,7 @@ function SignUp() {
         <main className="auth-page">
             <div className="auth-card">
                 <h1>Create an Account</h1>
+
                 <p className="auth-subtitle">
                     Join the DEV@Deakin community.
                 </p>
